@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c62828">
+<title>Tate 🥟 - Pedidos de empanadas</title>
+<style>
+  :root{
+    --rojo:#c62828;
+    --rojo-osc:#8e1a1a;
+    --masa:#e8b661;
+    --masa-osc:#c89446;
+    --crema:#fff7ec;
+    --texto:#3a2b1e;
+    --gris:#8a7d70;
+    --verde:#25d366;
+    --verde-osc:#128c3e;
+    --borde:#ecdcc4;
+    --sombra:0 4px 14px rgba(120,70,20,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--crema);
+    color:var(--texto);
+    line-height:1.5;
+    padding-bottom:40px;
+  }
+  header{
+    background:linear-gradient(135deg,var(--rojo),var(--rojo-osc));
+    color:#fff;
+    padding:22px 16px 18px;
+    text-align:center;
+    box-shadow:var(--sombra);
+    position:sticky;top:0;z-index:10;
+  }
+  header h1{font-size:1.8rem;letter-spacing:.5px}
+  header h1 .emo{font-size:1.6rem}
+  header p{opacity:.85;font-size:.85rem;margin-top:2px}
+
+  .tabs{
+    display:flex;gap:8px;max-width:640px;margin:16px auto 0;padding:0 12px;
+  }
+  .tab{
+    flex:1;padding:12px 8px;border:none;border-radius:12px 12px 0 0;
+    background:#f0e2cd;color:var(--gris);font-weight:700;font-size:.95rem;
+    cursor:pointer;transition:.15s;
+  }
+  .tab.active{background:#fff;color:var(--rojo);box-shadow:var(--sombra)}
+
+  main{max-width:640px;margin:0 auto;padding:0 12px}
+  .panel{display:none;background:#fff;border-radius:0 0 16px 16px;padding:18px 16px;box-shadow:var(--sombra)}
+  .panel.active{display:block}
+
+  h2{font-size:1.15rem;color:var(--rojo-osc);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .sub{font-size:.82rem;color:var(--gris);margin-bottom:14px}
+
+  label{font-size:.78rem;font-weight:700;color:var(--gris);display:block;margin-bottom:4px}
+  input,select{
+    width:100%;padding:11px 12px;border:1.5px solid var(--borde);border-radius:10px;
+    font-size:1rem;background:#fffdf9;color:var(--texto);
+  }
+  input:focus,select:focus{outline:none;border-color:var(--masa-osc)}
+
+  .btn{
+    border:none;border-radius:10px;padding:12px 16px;font-size:.95rem;font-weight:700;
+    cursor:pointer;transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--rojo);color:#fff}
+  .btn-primary:hover{background:var(--rojo-osc)}
+  .btn-masa{background:var(--masa);color:var(--texto)}
+  .btn-masa:hover{background:var(--masa-osc)}
+  .btn-wapp{background:var(--verde);color:#fff;width:100%;font-size:1.1rem;padding:15px}
+  .btn-wapp:hover{background:var(--verde-osc)}
+  .btn-ghost{background:transparent;color:var(--gris);padding:6px 8px}
+  .btn-full{width:100%}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  /* ---- Módulo 1: armado de pedido ---- */
+  .form-card{background:#fdf3e1;border:1.5px dashed var(--masa-osc);border-radius:14px;padding:14px;margin-bottom:16px}
+  .row{display:flex;gap:8px;margin-bottom:10px}
+  .row .col-emp{flex:1}
+  .row .col-cant{width:78px}
+  .item-list{list-style:none;margin:10px 0}
+  .item-list li{
+    display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid var(--borde);
+    border-radius:8px;margin-bottom:6px;font-size:.9rem;
+  }
+  .item-list li .q{background:var(--masa);color:var(--texto);font-weight:800;border-radius:6px;padding:1px 8px;font-size:.82rem}
+  .item-list li .x{margin-left:auto;color:var(--rojo);cursor:pointer;font-weight:800;border:none;background:none;font-size:1.1rem;padding:0 4px}
+
+  /* ---- Tarjetas de amigos ---- */
+  .amigo{
+    border:1.5px solid var(--borde);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:#fffdf9;
+  }
+  .amigo-top{display:flex;align-items:center;gap:10px}
+  .amigo-top .nombre{font-weight:800;font-size:1.05rem;flex:1}
+  .amigo-top .n-emp{font-size:.78rem;color:var(--gris);background:#f0e2cd;padding:2px 8px;border-radius:20px}
+  .amigo-detalle{margin-top:8px;font-size:.85rem;color:var(--texto)}
+  .amigo-detalle span{display:inline-block;background:#fdf3e1;border:1px solid var(--borde);border-radius:20px;padding:2px 9px;margin:3px 3px 0 0}
+  .amigo-acciones{display:flex;gap:6px;margin-top:10px}
+
+  /* ---- Módulo 2: selección ---- */
+  .check-row{
+    display:flex;align-items:center;gap:12px;padding:12px 12px;border:1.5px solid var(--borde);
+    border-radius:12px;margin-bottom:8px;background:#fffdf9;cursor:pointer;transition:.12s;
+  }
+  .check-row.sel{border-color:var(--rojo);background:#fff3f1}
+  .check-row input{width:22px;height:22px;accent-color:var(--rojo);flex-shrink:0}
+  .check-row .info{flex:1}
+  .check-row .info .nombre{font-weight:700}
+  .check-row .info .res{font-size:.78rem;color:var(--gris)}
+
+  .resumen{background:#fdf3e1;border:1.5px solid var(--masa-osc);border-radius:14px;padding:16px;margin-top:16px}
+  .resumen h3{color:var(--rojo-osc);margin-bottom:10px;font-size:1.05rem}
+  .resumen table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .resumen td{padding:6px 0;border-bottom:1px dashed var(--borde)}
+  .resumen td.q{text-align:right;font-weight:800;color:var(--rojo)}
+  .resumen .total{display:flex;justify-content:space-between;font-weight:800;margin-top:12px;font-size:1.05rem}
+
+  .vacio{text-align:center;color:var(--gris);padding:26px 10px;font-size:.9rem}
+  .vacio .big{font-size:2.4rem;display:block;margin-bottom:6px}
+
+  .config{margin-top:14px;font-size:.82rem;color:var(--gris)}
+  .config summary{cursor:pointer;font-weight:700}
+  .config .config-body{margin-top:10px;background:#fdf3e1;padding:12px;border-radius:10px}
+
+  .divisor{height:1px;background:var(--borde);margin:16px 0}
+  .hint{font-size:.75rem;color:var(--gris);margin-top:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="emo">🥟</span> Tate</h1>
+  <p>Pedidos de empanadas del grupo</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="amigos">👥 Amigos</button>
+  <button class="tab" data-tab="pedido">🛵 Armar pedido</button>
+</div>
+
+<main>
+  <!-- ============ MÓDULO 1: AMIGOS ============ -->
+  <section class="panel active" id="panel-amigos">
+    <h2>👥 Pedidos predeterminados</h2>
+    <p class="sub">Armá el pedido fijo de cada amigo. Se guarda en este dispositivo.</p>
+
+    <div class="form-card">
+      <label for="nombre">Nombre del amigo</label>
+      <input id="nombre" type="text" placeholder="Ej: Juan" autocomplete="off">
+
+      <div class="divisor"></div>
+      <label>Agregar empanadas</label>
+      <div class="row">
+        <div class="col-emp">
+          <select id="empSelect"></select>
+        </div>
+        <div class="col-cant">
+          <input id="empCant" type="number" min="1" value="1" inputmode="numeric">
+        </div>
+        <button class="btn btn-masa" id="addItem" type="button">+</button>
+      </div>
+
+      <ul class="item-list" id="itemList"></ul>
+      <p class="hint" id="itemHint">Todavía no agregaste empanadas.</p>
+
+      <div class="divisor"></div>
+      <button class="btn btn-primary btn-full" id="guardarAmigo" type="button">💾 Guardar amigo</button>
+    </div>
+
+    <div id="listaAmigos"></div>
+  </section>
+
+  <!-- ============ MÓDULO 2: ARMAR PEDIDO ============ -->
+  <section class="panel" id="panel-pedido">
+    <h2>🛵 ¿Quiénes están?</h2>
+    <p class="sub">Marcá quién pide hoy y consolidamos todo.</p>
+
+    <div id="listaCheck"></div>
+
+    <div id="resultado"></div>
+
+    <details class="config">
+      <summary>⚙️ Número de Tate</summary>
+      <div class="config-body">
+        <label for="tel">Teléfono de Tate (con código de país, sin + ni espacios)</label>
+        <input id="tel" type="tel" inputmode="tel" placeholder="Ej: 5493511234567">
+        <p class="hint">Ej. Argentina: 549 + característica sin 0 + número sin 15.</p>
+      </div>
+    </details>
+  </section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Menú de empanadas ----------
+  const MENU = [
+    "Carne suave","Carne picante","Pollo","Jamón y queso","Roquefort",
+    "Verdura","Humita","Choclo","Caprese","Cebolla y queso",
+    "Calabaza","Atún","Panceta y ciruela","Queso y albahaca"
+  ];
+
+  // ---------- Estado / almacenamiento ----------
+  const KEY_AMIGOS = "tate_amigos_v1";
+  const KEY_TEL = "tate_tel_v1";
+
+  const cargar = (k, def) => {
+    try { const v = JSON.parse(localStorage.getItem(k)); return v ?? def; }
+    catch(e){ return def; }
+  };
+  const guardar = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+
+  let amigos = cargar(KEY_AMIGOS, []);   // [{id, nombre, items:[{emp, cant}]}]
+  let editandoId = null;
+  let itemsTmp = [];                     // items del amigo en construcción
+
+  // ---------- Utilidades ----------
+  const $ = s => document.querySelector(s);
+  const nuevoId = () => "a" + Math.random().toString(36).slice(2,9);
+  const totalEmp = items => items.reduce((s,i)=>s + i.cant, 0);
+
+  // ---------- Poblar select de menú ----------
+  const empSelect = $("#empSelect");
+  MENU.forEach(e => {
+    const o = document.createElement("option");
+    o.value = e; o.textContent = e; empSelect.appendChild(o);
+  });
+
+  // ---------- TABS ----------
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+      t.classList.add("active");
+      $("#panel-" + t.dataset.tab).classList.add("active");
+      if(t.dataset.tab === "pedido") renderCheck();
+    });
+  });
+
+  // ================= MÓDULO 1 =================
+  function renderItemsTmp(){
+    const ul = $("#itemList");
+    ul.innerHTML = "";
+    itemsTmp.forEach((it, idx)=>{
+      const li = document.createElement("li");
+      li.innerHTML = `<span class="q">${it.cant}</span> ${it.emp}`;
+      const x = document.createElement("button");
+      x.className = "x"; x.textContent = "×"; x.type = "button";
+      x.setAttribute("aria-label","Quitar");
+      x.addEventListener("click", ()=>{ itemsTmp.splice(idx,1); renderItemsTmp(); });
+      li.appendChild(x);
+      ul.appendChild(li);
+    });
+    $("#itemHint").style.display = itemsTmp.length ? "none" : "block";
+  }
+
+  $("#addItem").addEventListener("click", ()=>{
+    const emp = empSelect.value;
+    let cant = parseInt($("#empCant").value, 10);
+    if(!cant || cant < 1) cant = 1;
+    const existente = itemsTmp.find(i => i.emp === emp);
+    if(existente) existente.cant += cant;
+    else itemsTmp.push({emp, cant});
+    $("#empCant").value = 1;
+    renderItemsTmp();
+  });
+
+  $("#guardarAmigo").addEventListener("click", ()=>{
+    const nombre = $("#nombre").value.trim();
+    if(!nombre){ alert("Poné un nombre 🙂"); $("#nombre").focus(); return; }
+    if(itemsTmp.length === 0){ alert("Agregá al menos una empanada 🥟"); return; }
+
+    if(editandoId){
+      const a = amigos.find(x=>x.id === editandoId);
+      if(a){ a.nombre = nombre; a.items = itemsTmp.slice(); }
+      editandoId = null;
+      $("#guardarAmigo").textContent = "💾 Guardar amigo";
+    } else {
+      amigos.push({ id:nuevoId(), nombre, items:itemsTmp.slice() });
+    }
+    guardar(KEY_AMIGOS, amigos);
+    // reset
+    $("#nombre").value = "";
+    itemsTmp = [];
+    renderItemsTmp();
+    renderAmigos();
+  });
+
+  function editarAmigo(id){
+    const a = amigos.find(x=>x.id === id);
+    if(!a) return;
+    editandoId = id;
+    $("#nombre").value = a.nombre;
+    itemsTmp = a.items.map(i=>({...i}));
+    renderItemsTmp();
+    $("#guardarAmigo").textContent = "💾 Actualizar amigo";
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function borrarAmigo(id){
+    const a = amigos.find(x=>x.id === id);
+    if(!a) return;
+    if(!confirm("¿Borrar a " + a.nombre + "?")) return;
+    amigos = amigos.filter(x=>x.id !== id);
+    guardar(KEY_AMIGOS, amigos);
+    if(editandoId === id){
+      editandoId = null; itemsTmp = []; $("#nombre").value = "";
+      $("#guardarAmigo").textContent = "💾 Guardar amigo"; renderItemsTmp();
+    }
+    renderAmigos();
+  }
+
+  function renderAmigos(){
+    const cont = $("#listaAmigos");
+    cont.innerHTML = "";
+    if(amigos.length === 0){
+      cont.innerHTML = '<div class="vacio"><span class="big">🧑‍🤝‍🧑</span>No hay amigos cargados todavía.<br>Armá el primero arriba 👆</div>';
+      return;
+    }
+    amigos.forEach(a=>{
+      const div = document.createElement("div");
+      div.className = "amigo";
+      const detalle = a.items.map(i=>`<span>${i.cant}× ${i.emp}</span>`).join("");
+      div.innerHTML = `
+        <div class="amigo-top">
+          <span class="nombre">${escapeHtml(a.nombre)}</span>
+          <span class="n-emp">${totalEmp(a.items)} emp.</span>
+        </div>
+        <div class="amigo-detalle">${detalle}</div>
+        <div class="amigo-acciones">
+          <button class="btn btn-masa" data-edit="${a.id}" type="button">✏️ Editar</button>
+          <button class="btn btn-ghost" data-del="${a.id}" type="button">🗑️ Borrar</button>
+        </div>`;
+      cont.appendChild(div);
+    });
+    cont.querySelectorAll("[data-edit]").forEach(b=>b.addEventListener("click", ()=>editarAmigo(b.dataset.edit)));
+    cont.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click", ()=>borrarAmigo(b.dataset.del)));
+  }
+
+  // ================= MÓDULO 2 =================
+  const seleccionados = new Set();
+
+  function renderCheck(){
+    const cont = $("#listaCheck");
+    cont.innerHTML = "";
+    if(amigos.length === 0){
+      cont.innerHTML = '<div class="vacio"><span class="big">🥟</span>Primero cargá amigos en la pestaña «Amigos».</div>';
+      $("#resultado").innerHTML = "";
+      return;
+    }
+    amigos.forEach(a=>{
+      const row = document.createElement("label");
+      row.className = "check-row" + (seleccionados.has(a.id) ? " sel" : "");
+      const resumen = a.items.map(i=>`${i.cant}× ${i.emp}`).join(", ");
+      row.innerHTML = `
+        <input type="checkbox" ${seleccionados.has(a.id)?"checked":""}>
+        <div class="info">
+          <div class="nombre">${escapeHtml(a.nombre)} <small style="color:var(--gris)">(${totalEmp(a.items)})</small></div>
+          <div class="res">${escapeHtml(resumen)}</div>
+        </div>`;
+      const chk = row.querySelector("input");
+      chk.addEventListener("change", ()=>{
+        if(chk.checked) seleccionados.add(a.id); else seleccionados.delete(a.id);
+        row.classList.toggle("sel", chk.checked);
+        renderResultado();
+      });
+      cont.appendChild(row);
+    });
+    renderResultado();
+  }
+
+  function consolidar(){
+    // Devuelve {porEmp: Map(emp->cant), total, elegidos:[amigo]}
+    const porEmp = new Map();
+    let total = 0;
+    const elegidos = amigos.filter(a=>seleccionados.has(a.id));
+    elegidos.forEach(a=>{
+      a.items.forEach(i=>{
+        porEmp.set(i.emp, (porEmp.get(i.emp)||0) + i.cant);
+        total += i.cant;
+      });
+    });
+    return {porEmp, total, elegidos};
+  }
+
+  function renderResultado(){
+    const cont = $("#resultado");
+    const {porEmp, total, elegidos} = consolidar();
+    if(elegidos.length === 0){
+      cont.innerHTML = '<div class="vacio">Marcá quién está para pedir ☝️</div>';
+      return;
+    }
+    const filas = [...porEmp.entries()]
+      .sort((a,b)=>b[1]-a[1])
+      .map(([emp,c])=>`<tr><td>${escapeHtml(emp)}</td><td class="q">${c}</td></tr>`)
+      .join("");
+    const nombres = elegidos.map(a=>escapeHtml(a.nombre)).join(", ");
+    cont.innerHTML = `
+      <div class="resumen">
+        <h3>🧾 Pedido consolidado</h3>
+        <div style="font-size:.82rem;color:var(--gris);margin-bottom:10px">👥 ${nombres}</div>
+        <table>${filas}</table>
+        <div class="total"><span>Total empanadas</span><span>${total} 🥟</span></div>
+      </div>
+      <button class="btn btn-wapp" id="btnWapp" type="button" style="margin-top:14px">📲 Enviar pedido por WhatsApp</button>
+    `;
+    $("#btnWapp").addEventListener("click", enviarWapp);
+  }
+
+  function armarMensaje(){
+    const {porEmp, total, elegidos} = consolidar();
+    let msg = "¡Hola Tate! 🥟 Queríamos hacer este pedido:\n\n";
+    [...porEmp.entries()].sort((a,b)=>b[1]-a[1]).forEach(([emp,c])=>{
+      msg += `• ${c}x ${emp}\n`;
+    });
+    msg += `\nTotal: ${total} empanadas`;
+    msg += `\n(Para: ${elegidos.map(a=>a.nombre).join(", ")})`;
+    msg += `\n\n¡Gracias! 🙌`;
+    return msg;
+  }
+
+  function enviarWapp(){
+    const {elegidos} = consolidar();
+    if(elegidos.length === 0){ alert("No hay nadie seleccionado."); return; }
+    const tel = ($("#tel").value || "").replace(/[^0-9]/g, "");
+    const texto = encodeURIComponent(armarMensaje());
+    const base = tel ? ("https://wa.me/" + tel) : "https://wa.me/";
+    window.open(base + "?text=" + texto, "_blank");
+  }
+
+  // ---------- Teléfono persistente ----------
+  $("#tel").value = cargar(KEY_TEL, "");
+  $("#tel").addEventListener("input", ()=> guardar(KEY_TEL, $("#tel").value.trim()));
+
+  // ---------- Seguridad básica de texto ----------
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  // ---------- Init ----------
+  renderItemsTmp();
+  renderAmigos();
+})();
+</script>
+</body>
+</html>
